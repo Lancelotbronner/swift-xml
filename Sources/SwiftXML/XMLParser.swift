@@ -25,6 +25,9 @@ class _XMLStackParser2: NSObject, XMLParserDelegate {
 	func parse(with data: Data) throws -> _XMLElement2?  {
 		let xmlParser = XMLParser(data: data)
 		xmlParser.delegate = self
+		xmlParser.shouldProcessNamespaces = false
+		xmlParser.shouldReportNamespacePrefixes = false
+		xmlParser.shouldResolveExternalEntities = false
 
 		if xmlParser.parse() {
 			return stack.isEmpty ? nil : stack.removeLast()
