@@ -21,6 +21,11 @@ extension DecodingError {
         return .typeMismatch(expectation, Context(codingPath: path, debugDescription: description))
     }
 
+	static func _typeMismatch(at path: [CodingKey], expectation: Any.Type, reality: String) -> DecodingError {
+		let description = "Expected to decode \(expectation) but found '\(reality)' instead."
+		return .typeMismatch(expectation, Context(codingPath: path, debugDescription: description))
+	}
+
     /// Returns a description of the type of `value` appropriate for an error message.
     ///
     /// - parameter value: The value whose type to describe.

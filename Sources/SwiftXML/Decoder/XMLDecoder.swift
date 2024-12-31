@@ -182,7 +182,11 @@ open class XMLDecoder {
     open var userInfo: [CodingUserInfoKey : Any] = [:]
 
     /// Initializes `self` with default strategies.
-    public init() {}
+    public init() {
+		parser = _XMLStackParser2(for: self)
+	}
+
+	private var parser: _XMLStackParser2!
 
     /// Decodes a top-level value of the given type from the given XML representation.
     ///
@@ -192,19 +196,29 @@ open class XMLDecoder {
     /// - throws: `DecodingError.dataCorrupted` if values requested from the payload are corrupted, or if the given data is not valid XML.
     /// - throws: An error if any value throws an error during decoding.
     open func decode<T : Decodable>(_ type: T.Type, from data: Data) throws -> T {
-        let topLevel: [String: Any]
+		let root: _XMLElement2?
         do {
-            topLevel = try _XMLStackParser.parse(with: data)
+			root = try parser.parse(with: data)
         } catch {
             throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [], debugDescription: "The given data was not valid XML.", underlyingError: error))
         }
-        
-		let decoder = _XMLDecoder(referencing: topLevel, from: self)
 
-        guard let value = try decoder.unbox(topLevel, as: type) else {
-            throw DecodingError.valueNotFound(type, DecodingError.Context(codingPath: [], debugDescription: "The given data did not contain a top-level value."))
-        }
-        
-        return value
+		guard let root else {
+			throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [], debugDescription: "The given XML did not contain a root element."))
+		}
+
+		let document = _XMLElement2(key: "<root>", attributes: [:], value: "", children: [root])
+		let storage = _XMLDecodingStorage(of: document, using: self)
+		return try storage.decodeCompound()
     }
+}
+
+extension XMLDecoder.KeyDecodingStrategy {
+	func decode(_ codingPath: [any CodingKey]) -> any CodingKey {
+		switch self {
+		case .useDefaultKeys: codingPath.last!
+		case .convertFromSnakeCase: _CodingKey(stringValue: Self._convertFromSnakeCase(codingPath.last!.stringValue))
+		case .custom(let transform): transform(codingPath)
+		}
+	}
 }

@@ -15,7 +15,12 @@ struct _XMLElement2 {
 }
 
 class _XMLStackParser2: NSObject, XMLParserDelegate {
+	let decoder: XMLDecoder
 	var stack: [_XMLElement2] = []
+
+	init(for decoder: XMLDecoder) {
+		self.decoder = decoder
+	}
 
 	func parse(with data: Data) throws -> _XMLElement2?  {
 		let xmlParser = XMLParser(data: data)
@@ -35,6 +40,7 @@ class _XMLStackParser2: NSObject, XMLParserDelegate {
 	}
 
 	func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String] = [:]) {
+		//TODO: rename according to decoder key convention
 		let node = _XMLElement2(key: elementName, attributes: attributeDict)
 		stack.append(node)
 	}
