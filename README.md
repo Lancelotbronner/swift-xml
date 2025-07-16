@@ -5,15 +5,15 @@
 ```swift
 @XMLCodable
 public struct IBDocument {
-	@Attribute var type: String?
-	@Attribute var version: String?
-	@Attribute var toolsVersion: Int?
-	@Attribute var targetRuntime: String
-	@Attribute var propertyAccessControl: String?
-	@Attribute var useAutoLayout: Bool?
-	@Attribute var useTraitCollections: Bool?
-	@Attribute var useSafeAreas: Bool?
-	@Attribute var colorMatched: Bool?
+	@XMLAttribute var type: String?
+	@XMLAttribute var version: String?
+	@XMLAttribute var toolsVersion: Int?
+	@XMLAttribute var targetRuntime: String
+	@XMLAttribute var propertyAccessControl: String?
+	@XMLAttribute var useAutoLayout: Bool?
+	@XMLAttribute var useTraitCollections: Bool?
+	@XMLAttribute var useSafeAreas: Bool?
+	@XMLAttribute var colorMatched: Bool?
 	
 	@Element public var dependencies = IBDependencies()
 	// directly parses a "customFonts" object
@@ -28,13 +28,13 @@ public struct IBDocument {
 
 @XMLCodable
 public struct IBCustomFonts {
-	@Attribute public var key: String
+	@XMLAttribute public var key: String
 	@Element("array") public var fonts: [IBFont] = []
 }
 
 @XMLCodable
 public struct IBFont {
-	@Attribute public var key: String
+	@XMLAttribute public var key: String
 	@Element("string") public var families: [IBFontFamily] = []
 }
 
@@ -63,7 +63,7 @@ public struct IBDependencies {
 
 @XMLCodable
 public struct IBDeployment: CustomStringConvertible {
-	@Attribute var identifier: String
+	@XMLAttribute var identifier: String
 	
 	public var description: String {
 		"deployment \(identifier)"
@@ -72,8 +72,8 @@ public struct IBDeployment: CustomStringConvertible {
 
 @XMLCodable
 public struct IBPlugin: CustomStringConvertible {
-	@Attribute var identifier: String
-	@Attribute var version: Int
+	@XMLAttribute var identifier: String
+	@XMLAttribute var version: Int
 	
 	public var description: String {
 		"\(identifier) v\(version)"

@@ -9,7 +9,6 @@
 import Foundation
 
 final class _XMLDecodingStorage {
-	
 	/// A reference to the decoder we're reading from.
 	let decoder: XMLDecoder
 	
@@ -215,7 +214,12 @@ extension _XMLDecodingStorage {
 	
 	func decodeCompound<T: Decodable>(_ type: T.Type = T.self) throws -> T {
 		//TODO: detect decoding date or data?
-		try T(from: _XMLDecoder(referencing: self))
+		//TODO: detect XMLChoice
+		//TODO: detect XMLAttribute
+		if let type = T.self as? XMLCodable.Type {
+			print("XMLCodable affinity: '\(type.xmlCodingAffinity)'")
+		}
+		return try T(from: _XMLDecoder(referencing: self))
 	}
 	
 	//	func unbox<T : Decodable>(_ value: Any, as type: T.Type) throws -> T? {

@@ -12,6 +12,18 @@ struct _XMLElement2 {
 	let attributes: [String: String]
 	var value = ""
 	var children: [_XMLElement2] = []
+	
+	var keys: some Collection<String> {
+		attributes.keys + children.lazy.map(\.key)
+	}
+	
+	func contains(_ key: some CodingKey) -> Bool {
+		if let intValue = key.intValue {
+			children.indices.contains(intValue)
+		} else {
+			attributes.keys.contains(key.stringValue) || children.contains { $0.key == key.stringValue }
+		}
+	}
 }
 
 class _XMLStackParser2: NSObject, XMLParserDelegate {

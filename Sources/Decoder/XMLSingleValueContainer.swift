@@ -8,7 +8,6 @@
 import Foundation
 
 struct _XMLDecoder {
-	
 	/// A reference to the storage we're decoding from.
 	private let storage: _XMLDecodingStorage
 	
@@ -23,33 +22,27 @@ struct _XMLDecoder {
 		}
 		return try storage.decode()
 	}
-	
 }
 
 extension _XMLDecoder : Decoder {
 	
-	@inlinable
-	public var codingPath: [any CodingKey] {
+	@inlinable public var codingPath: [any CodingKey] {
 		storage.codingPath
 	}
 	
-	@inlinable
-	public var userInfo: [CodingUserInfoKey : Any] {
+	@inlinable public var userInfo: [CodingUserInfoKey : Any] {
 		storage.decoder.userInfo
 	}
 	
-	@inlinable
-	public func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> {
+	@inlinable public func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> {
 		storage.keyedContainer()
 	}
 	
-	@inlinable
-	public func unkeyedContainer() throws -> UnkeyedDecodingContainer {
+	@inlinable public func unkeyedContainer() throws -> UnkeyedDecodingContainer {
 		storage.unkeyedContainer()
 	}
 	
-	@inlinable
-	public func singleValueContainer() throws -> SingleValueDecodingContainer {
+	@inlinable public func singleValueContainer() throws -> SingleValueDecodingContainer {
 		self
 	}
 }
