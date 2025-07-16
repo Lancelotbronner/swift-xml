@@ -9,7 +9,7 @@
 import Foundation
 
 nonisolated(unsafe) let _iso8601Formatter: ISO8601DateFormatter = {
-    let formatter = ISO8601DateFormatter()
-    formatter.formatOptions = .withInternetDateTime
-    return formatter
+	let formatter = ISO8601DateFormatter()
+	formatter.formatOptions = .withInternetDateTime
+	return formatter
 }()
