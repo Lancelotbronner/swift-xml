@@ -13,15 +13,15 @@ final class _XMLDecodingStorage {
 	let decoder: XMLDecoder
 	
 	/// The container stack.
-	private var containers: [_XMLContainer] = []
+	var containers: [_XMLContainer] = []
 	
 	/// The current coding path.
 	private(set) var codingPath: [any CodingKey] = []
 	
-	/// Initializes `self` with no containers.
-	init(of root: _XMLElement2, affinity: XMLCodingAffinity = .none, using decoder: XMLDecoder) {
+	/// Initializes `self` with a root container.
+	init(of root: _XMLElement2, using decoder: XMLDecoder) {
 		self.decoder = decoder
-		containers.append(_XMLContainer(element: root, affinity: affinity))
+		containers.append(.node(root))
 	}
 	
 	var count: Int {
@@ -96,42 +96,57 @@ extension _XMLDecodingStorage {
 	}
 	
 	func get<T>(_ type: T.Type, forKey key: any CodingKey) throws(DecodingError) -> _XMLContainer {
-		let container = try get(T.self)
-		let element = container.element(for: key)
+		let container = try get(T.self).container(key)
 		
-		guard let element else {
+		guard let container else {
 			throw DecodingError.keyNotFound(key, DecodingError.Context(codingPath: codingPath, debugDescription: "No value associated with key \(_errorDescription(of: key))."))
 		}
-		return _XMLContainer(element: element, affinity: .none)
+		return container
 	}
 	
-	func get<T>(_ type: T.Type, at index: Int) throws(DecodingError) -> _XMLContainer {
-		let container = try get(T.self)
-		let element = container.element(at: index)
+	func get<T>(_ type: T.Type, at i: Int) throws(DecodingError) -> _XMLContainer {
+		let container = try get(T.self).container(at: i)
 		
-		guard let element else {
-			throw DecodingError.valueNotFound(type, DecodingError.Context(codingPath: codingPath + [_CodingKey(intValue: index)], debugDescription: "Unkeyed container is at end."))
+		guard let container else {
+			throw DecodingError.valueNotFound(type, DecodingError.Context(codingPath: codingPath + [_CodingKey(intValue: i)], debugDescription: "Unkeyed container is at end."))
 		}
-		return _XMLContainer(element: element, affinity: .element)
+		return container
 	}
 	
 	func decode() throws(DecodingError) -> String {
-		try get(String.self).value
+		let container = try get(String.self)
+		guard let value = container.value else {
+			throw DecodingError._typeMismatch(at: codingPath, expectation: String.self, reality: container)
+		}
+		return value
+	}
+	
+	func decode() throws(DecodingError) -> Bool {
+		let value: String = try decode()
+		guard let result = Bool(value) else {
+			switch value.uppercased() {
+			case "YES", "1", "ON": return true
+			case "NO", "0", "OFF": return false
+			default: break
+			}
+			throw DecodingError._typeMismatch(at: codingPath, expectation: Bool.self, reality: value)
+		}
+		return result
 	}
 	
 	func decode<T: LosslessStringConvertible>(_ type: T.Type = T.self) throws(DecodingError) -> T {
-		let container = try get(T.self)
-		guard let result = T(container.value) else {
-			throw DecodingError._typeMismatch(at: codingPath, expectation: T.self, reality: container.value)
+		let value: String = try decode()
+		guard let result = T(value) else {
+			throw DecodingError._typeMismatch(at: codingPath, expectation: T.self, reality: value)
 		}
 		return result
 	}
 	
 	func decode<T: FloatingPoint & LosslessStringConvertible>(_ type: T.Type = T.self) throws(DecodingError) -> T {
-		let container = try get(T.self)
-		guard let result = T(container.value) else {
+		let value: String = try decode()
+		guard let result = T(value) else {
 			if case let .convertFromString(positiveInfinity, negativeInfinity, nan) = decoder.nonConformingFloatDecodingStrategy {
-				switch container.value {
+				switch value {
 				case positiveInfinity: return .infinity
 				case negativeInfinity: return -.infinity
 				case nan: return .nan
@@ -139,7 +154,7 @@ extension _XMLDecodingStorage {
 				}
 			}
 			
-			throw DecodingError._typeMismatch(at: codingPath, expectation: T.self, reality: container.value)
+			throw DecodingError._typeMismatch(at: codingPath, expectation: T.self, reality: value)
 		}
 		return result
 	}
@@ -220,14 +235,28 @@ extension _XMLDecodingStorage {
 	//	}
 	
 	func decodeCompound<T: Decodable>(_ type: T.Type = T.self) throws -> T {
-		if let container = containers.last, let codable = type as? XMLCodable.Type {
-			containers.append(_XMLContainer(element: container.element, affinity: codable.xmlCodingAffinity))
-			let result = try T(from: _XMLSingleValueDecodingContainer(referencing: self))
+		let decoder = _XMLSingleValueDecodingContainer(referencing: self)
+		
+		if type as? XMLChoice.Type != nil {
+			let container = try get(T.self)
+			containers.append(container.applying(affinity: .choice))
+			let result = try T(from: decoder)
 			containers.removeLast()
 			return result
-		} else {
-			return try T(from: _XMLSingleValueDecodingContainer(referencing: self))
 		}
+		
+		if let custom = type as? XMLDecodable.Type {
+			let c = containers.count
+			try custom.decoding(xml: self)
+			let result = try T(from: decoder)
+			
+			while containers.count > c {
+				containers.removeLast()
+			}
+			return result
+		}
+		
+		return try T(from: decoder)
 	}
 	
 	//	func unbox<T : Decodable>(_ value: Any, as type: T.Type) throws -> T? {

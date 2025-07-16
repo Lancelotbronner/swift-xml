@@ -7,11 +7,23 @@
 
 import Foundation
 
-struct _XMLElement2 {
-	let key: String
-	let attributes: [String: String]
-	var value = ""
-	var children: [_XMLElement2] = []
+public struct _XMLElement2 {
+	public let key: String
+	public let attributes: [String: String]
+	public internal(set) var value = ""
+	public internal(set) var children: [_XMLElement2] = []
+	
+	func containsChild(_ key: String) -> Bool {
+		children.contains { $0.key == key }
+	}
+	
+	func containsChild(at i: Int) -> Bool {
+		children.indices.contains(i)
+	}
+	
+	func firstChild(_ key: String) -> _XMLElement2? {
+		children.first { $0.key == key }
+	}
 }
 
 class _XMLStackParser2: NSObject, XMLParserDelegate {
