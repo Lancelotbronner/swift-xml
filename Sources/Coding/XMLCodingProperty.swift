@@ -5,7 +5,7 @@
 //  Created by Christophe Bronner on 2025-07-16.
 //
 
-public protocol XMLCodingAttribute<Value>: CustomReflectable {
+public protocol XMLCodingAttribute<Value>: CustomReflectable, CustomStringConvertible {
 	associatedtype Value
 	
 	init(wrappedValue: Value)
@@ -16,6 +16,10 @@ public protocol XMLCodingAttribute<Value>: CustomReflectable {
 public extension XMLCodingAttribute {
 	var customMirror: Mirror {
 		Mirror(reflecting: wrappedValue)
+	}
+	
+	var description: String {
+		"\(wrappedValue)"
 	}
 }
 

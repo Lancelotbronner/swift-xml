@@ -145,12 +145,7 @@ extension _XMLContainer {
 		case .ambiguous: applying(affinity: .elements).container(named: key)
 		case let .elements(elements): _XMLContainer(on: elements.filter { $0.key == key })
 		case let .attributes(attributes): attributes[key].map(_XMLContainer.value)
-		case let .choice(choice):
-			switch key {
-			case choice.key: self
-			case "_0": .node(choice)
-			default: nil
-			}
+		case let .choice(choice): key == choice.key ? self : .node(choice)
 		case .value: nil
 		}
 	}
