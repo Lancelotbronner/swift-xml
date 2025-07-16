@@ -25,7 +25,7 @@ struct _XMLUnkeyedDecodingContainer {
 extension _XMLUnkeyedDecodingContainer : UnkeyedDecodingContainer {
 	
 	@inlinable public var count: Int? {
-		try? storage.get(Any.self).children.count
+		storage.container?.count
 	}
 	
 	@inlinable public var isAtEnd: Bool {

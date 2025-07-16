@@ -10,10 +10,32 @@ public protocol XMLCodable {
 }
 
 public enum XMLCodingAffinity {
+	case none
 	case element
 	case attribute
 	case choice
 	case directive
+	
+	var isSelf: Bool {
+		switch self {
+		case .choice: true
+		default: false
+		}
+	}
+	
+	var isElement: Bool {
+		switch self {
+		case .none, .element: true
+		default: false
+		}
+	}
+	
+	var isAttribute: Bool {
+		switch self {
+		case .none, .attribute, .choice: true
+		default: false
+		}
+	}
 }
 
 public protocol XMLChoice: XMLCodable {}

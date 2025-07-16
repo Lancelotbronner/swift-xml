@@ -1,5 +1,5 @@
 //
-//  _XMLDecoder.swift
+//  _XMLSingleValueDecodingContainer.swift
 //  swift-xml
 //
 //  Created by Christophe Bronner on 2024-12-27.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct _XMLDecoder {
+struct _XMLSingleValueDecodingContainer {
 	/// A reference to the storage we're decoding from.
 	private let storage: _XMLDecodingStorage
 	
@@ -24,7 +24,7 @@ struct _XMLDecoder {
 	}
 }
 
-extension _XMLDecoder : Decoder {
+extension _XMLSingleValueDecodingContainer : Decoder {
 	
 	@inlinable public var codingPath: [any CodingKey] {
 		storage.codingPath
@@ -47,7 +47,7 @@ extension _XMLDecoder : Decoder {
 	}
 }
 
-extension _XMLDecoder : SingleValueDecodingContainer {
+extension _XMLSingleValueDecodingContainer : SingleValueDecodingContainer {
 	
 	public func decodeNil() -> Bool {
 		false
